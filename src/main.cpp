@@ -37,6 +37,8 @@ CANMessage outMsg;
 
 Timer canTimer;
 
+void CANCallback();
+
 int main() {
 
   canTimer.start();
@@ -60,29 +62,12 @@ int main() {
   wait_ms(100);
   led.write(1);
 
-  while (1) {
-    if (can0.read(inMsg)) {
-      // Read in ECU frames
-      // PE1
-      if (inMsg.id == 0x0CFFF048) {
-        rpm = ((inMsg.data[1] << 8) + inMsg.data[0]);
-        led = !led;
-      }
-      // PE6
-      else if (inMsg.id == 0x0CFFF548) {
-        uint16_t newTemp = ((inMsg.data[5] << 8) + inMsg.data[4]);
-        if (newTemp > 32767) {
-          newTemp = newTemp - 65536;
-        }
-        waterTemp = ((newTemp / 10.0) * 1.8) + 32;
-      }
-    }
+  can0.filter(0x0CFFF048, 0x0CFFF548, CANExtended, 0);
+  can0.attach(CANCallback);
 
+  while (1) {
     // Read scale and remove decimal point. Remove negative vals.
     scaleInt = (uint32_t)((scale1.readA()) * 1000);
-    if (scaleInt < 0) {
-      scaleInt = 0;
-    }
 
     // Print CAN alive frame
     if (canTimer.read_ms() > 50) {
@@ -93,5 +78,24 @@ int main() {
     // Send Data
     usb.printf("r%d", rpm);
     usb.printf("l%d\n", scaleInt);
+  }
+}
+
+void CANCallback() {
+  if (can0.read(inMsg)) {
+    // Read in ECU frames
+    // PE1
+    if (inMsg.id == 0x0CFFF048) {
+      rpm = ((inMsg.data[1] << 8) + inMsg.data[0]);
+      led = !led;
+    }
+    // PE6
+    else if (inMsg.id == 0x0CFFF548) {
+      uint16_t newTemp = ((inMsg.data[5] << 8) + inMsg.data[4]);
+      if (newTemp > 32767) {
+        newTemp = newTemp - 65536;
+      }
+      waterTemp = ((newTemp / 10.0) * 1.8) + 32;
+    }
   }
 }
