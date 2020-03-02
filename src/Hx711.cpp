@@ -53,8 +53,6 @@ float Hx711::tareB(int times, double seconds) {
     wait(seconds);
   }
   setTareValB(temp / times);
-  printf("%s", "Tare value for B: ");
-  printf("%f\n\n", tareValB_);
 
   return tareValB_;
 }

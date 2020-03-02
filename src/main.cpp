@@ -2,7 +2,7 @@
 
 Bronco Racing 2020 Dyno zDAQ
 
-Tasks:
+What this does:
   - HX711 2 channel scale amplifier input (80sps)
   - Servo motor control
   - CAN bus alive frame generation (50ms)
@@ -17,6 +17,7 @@ Info:
 
 #include <Hx711.h>
 #include <mbed.h>
+#include <servo.h>
 
 CAN can0(PA_11, PA_12, 250000);
 
@@ -26,6 +27,7 @@ Serial usb = Serial(USBTX, USBRX, 921600);
 
 DigitalOut led(LED3);
 DigitalOut testPin(D12); // used for timing tests
+DigitalOut solenoidPin(D1);
 
 volatile uint16_t rpm = 0;
 volatile int16_t waterTemp = 0;
@@ -36,6 +38,7 @@ CANMessage inMsg;
 CANMessage outMsg;
 
 Timer canTimer;
+Servo servo(D9);
 
 void CANCallback();
 
@@ -57,7 +60,7 @@ int main() {
 
   wait_ms(100);
 
-  // scale1.tareA(5, 1); // Tare 5 times, 1 second each, and average them
+  scale1.tareA(15, .2); // Tare 15 times, .2 seconds each, and average them
 
   wait_ms(100);
   led.write(1);
@@ -67,7 +70,7 @@ int main() {
 
   while (1) {
     // Read scale and remove decimal point. Remove negative vals.
-    scaleInt = (uint32_t)((scale1.readA()) * 1000);
+    scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
 
     // Print CAN alive frame
     if (canTimer.read_ms() > 50) {
@@ -77,7 +80,12 @@ int main() {
 
     // Send Data
     usb.printf("r%d", rpm);
-    usb.printf("l%d\n", scaleInt);
+    usb.printf("l%ld\n", scaleInt);
+
+    if (usb.readable()) {
+      // solenoidPin.write(usb.getc());
+      servo.position(usb.getc());
+    }
   }
 }
 
