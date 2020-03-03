@@ -33,6 +33,5 @@ void Servo::write(unsigned char degree) {
 
 void Servo::convert(unsigned char degree) {
   // 0~180 degree correspond to 500~2500
-  //   pulse = degree * 11 + 500; // Use this if it works wrong
-  pulse = degree * 5.5 + 1000;
+  pulse = degree * 11 + 500;
 }
