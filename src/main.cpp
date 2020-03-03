@@ -1,19 +1,7 @@
 /*
 
-Bronco Racing 2020 Dyno zDAQ
+Bronco Racing 2020 Dyno zDAQ - See README for details
 
-What this does:
-  - HX711 2 channel scale amplifier input (80sps)
-  - Servo motor control
-  - CAN bus alive frame generation (50ms)
-  - CAN bus data interpretation
-  - Data transfer to MATLAB over serial
-
-Info:
-  - Current output rate is 80sps clocked by the HX711 chip.
-  - Serial routed to Nucleo L432KC onboard micro USB port
-  - Output multiplies HX711 reading by 1000 (keeps 3 decimal places)
-  - Send 0-180 degrees over serial as uint8 to control servo.
 */
 
 #include <Hx711.h>
@@ -26,7 +14,7 @@ Hx711 scale1 = Hx711(D11, D9);
 
 Serial usb = Serial(USBTX, USBRX, 921600);
 
-DigitalOut led(LED3);
+DigitalOut led(LED3); // Onboard green LED
 DigitalOut testPin(D12); // used for timing tests
 DigitalOut solenoidPin(D1);
 
@@ -38,10 +26,10 @@ volatile uint32_t scaleInt = 0;
 CANMessage inMsg;
 CANMessage outMsg;
 
-Timer canTimer;
+Timer canTimer; // Timer for CAN alive frame
 Servo servo(A1);
 
-void CANCallback();
+void CANCallback(); // Used for CAN frame interrupt
 
 int main() {
   canTimer.start();
@@ -103,7 +91,7 @@ void CANCallback() {
       if (newTemp > 32767) {
         newTemp = newTemp - 65536;
       }
-      waterTemp = ((newTemp / 10.0) * 1.8) + 32;
+      waterTemp = ((newTemp / 10.0) * 1.8) + 32; // Convert to fahrenheit
     }
   }
 }
