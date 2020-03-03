@@ -13,6 +13,7 @@ Info:
   - Current output rate is 80sps clocked by the HX711 chip.
   - Serial routed to Nucleo L432KC onboard micro USB port
   - Output multiplies HX711 reading by 1000 (keeps 3 decimal places)
+  - Send 0-180 degrees over serial as uint8 to control servo.
 */
 
 #include <Hx711.h>
@@ -83,7 +84,7 @@ int main() {
 
     if (usb.readable()) {
       // solenoidPin.write(usb.getc());
-      servo.position((float)(uint8_t)usb.getc());
+      servo.write((uint8_t)usb.getc());
     }
   }
 }
