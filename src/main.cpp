@@ -38,12 +38,11 @@ CANMessage inMsg;
 CANMessage outMsg;
 
 Timer canTimer;
-Servo servo(D9);
+Servo servo(A1);
 
 void CANCallback();
 
 int main() {
-
   canTimer.start();
 
   led.write(0);
@@ -84,7 +83,7 @@ int main() {
 
     if (usb.readable()) {
       // solenoidPin.write(usb.getc());
-      servo.position(usb.getc());
+      servo.position((float)(uint8_t)usb.getc());
     }
   }
 }
