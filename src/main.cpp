@@ -4,17 +4,21 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 */
 
+
 #include <Hx711.h>
+#include <PID.h>
 #include <mbed.h>
 #include <servo.h>
 
 CAN can0(PA_11, PA_12, 250000);
 
+PID controller(15, 0, 0, 80);
+
 Hx711 scale1 = Hx711(D11, D9);
 
 Serial usb = Serial(USBTX, USBRX, 921600);
 
-DigitalOut led(LED3); // Onboard green LED
+DigitalOut led(LED3);
 DigitalOut testPin(D12); // used for timing tests
 DigitalOut solenoidPin(D1);
 
@@ -23,15 +27,24 @@ volatile int16_t waterTemp = 0;
 volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
+volatile float servoVal = 95;
+float RPMSet = 6000;
+
 CANMessage inMsg;
 CANMessage outMsg;
 
-Timer canTimer; // Timer for CAN alive frame
+Timer canTimer;
 Servo servo(A1);
 
-void CANCallback(); // Used for CAN frame interrupt
+void CANCallback();
 
 int main() {
+
+  controller.setInputLimits(0.0, 14000);
+  controller.setOutputLimits(0, 90);
+  controller.setMode(0);
+  controller.setSetPoint(RPMSet);
+
   canTimer.start();
 
   led.write(0);
@@ -48,7 +61,7 @@ int main() {
 
   wait_ms(100);
 
-  scale1.tareA(15, .2); // Tare 15 times, .2 seconds each, and average them
+  scale1.tareA(5, .2); // Tare 5 times, .2 seconds each, and average them
 
   wait_ms(100);
   led.write(1);
@@ -59,24 +72,40 @@ int main() {
   while (1) {
     // Read scale and remove decimal point. Remove negative vals.
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
+    controller.setProcessValue((float)rpm);
 
-    // Print CAN alive frame
+    if (rpm > (RPMSet - 2000)) {
+      servoVal = 140 - controller.compute();
+    } else {
+      servoVal = 0;
+    }
+
+    // servoVal = 0;
+    servo.write(servoVal);
+
+    // Send CAN alive frame
     if (canTimer.read_ms() > 50) {
       can0.write(outMsg);
       canTimer.reset();
     }
 
-    // Send Data
-    usb.printf("r%d", rpm);
-    usb.printf("l%ld\n", scaleInt);
+    // Send Data for MATLAB
+    // usb.printf("r%d", rpm);
+    // usb.printf("l%ld\n", scaleInt);
 
-    if (usb.readable()) {
-      // solenoidPin.write(usb.getc());
-      servo.write((uint8_t)usb.getc());
-    }
+    // For terminal viewing
+    usb.printf("%f\t", servoVal);
+    usb.printf("%d\n", rpm);
+    // usb.printf("%d\n", waterTemp);
+
+    // if (usb.readable()) {
+    // solenoidPin.write(usb.getc());
+    // servo.write((uint8_t)usb.getc());
+    // }
   }
 }
 
+// Fires on incoming CAN frame interrupt
 void CANCallback() {
   if (can0.read(inMsg)) {
     // Read in ECU frames
@@ -91,7 +120,7 @@ void CANCallback() {
       if (newTemp > 32767) {
         newTemp = newTemp - 65536;
       }
-      waterTemp = ((newTemp / 10.0) * 1.8) + 32; // Convert to fahrenheit
+      waterTemp = (uint16_t)((newTemp / 10) * 1.8) + 32;
     }
   }
 }
