@@ -12,7 +12,7 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 CAN can0(PA_11, PA_12, 250000);
 
-PID controller(15, 0, 0, 80);
+PID controller(10, 0, 10, 80);
 
 Hx711 scale1 = Hx711(D11, D9);
 
@@ -41,7 +41,7 @@ void CANCallback();
 int main() {
 
   controller.setInputLimits(0.0, 14000);
-  controller.setOutputLimits(0, 90);
+  controller.setOutputLimits(0, 140);
   controller.setMode(0);
   controller.setSetPoint(RPMSet);
 
@@ -74,7 +74,7 @@ int main() {
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
     controller.setProcessValue((float)rpm);
 
-    if (rpm > (RPMSet - 2000)) {
+    if (rpm > (RPMSet - 6000)) {
       servoVal = 140 - controller.compute();
     } else {
       servoVal = 0;
