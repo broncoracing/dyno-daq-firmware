@@ -28,7 +28,7 @@ volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
 volatile float servoVal = 95;
-float RPMSet = 10000;
+float RPMSet = 4500;
 
 CANMessage inMsg;
 CANMessage outMsg;
@@ -74,14 +74,13 @@ int main() {
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
     controller.setProcessValue((float)rpm);
 
-    if (rpm > (RPMSet - 3000)) {
-      servoVal = 140 - controller.compute();
-      //servoVal = 90 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 140)
+    if (rpm > (RPMSet - 1500)) {
+      //servoVal = 140 - controller.compute();
+      servoVal = 90 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 140)
     } else {
       servoVal = 0;
     }
 
-    // servoVal = 0;
     servo.write(servoVal);
 
     // Send CAN alive frame
@@ -91,12 +90,12 @@ int main() {
     }
 
     // Send Data for MATLAB
-    // usb.printf("r%d", rpm);
-    // usb.printf("l%ld\n", scaleInt);
+    usb.printf("r%d", rpm);
+    usb.printf("l%ld\n", scaleInt);
 
     // For terminal viewing
-    usb.printf("%f\t", servoVal);
-    usb.printf("%d\n", rpm);
+    //usb.printf("%f\t", servoVal);
+    //usb.printf("%d\n", rpm);
     // usb.printf("%d\n", waterTemp);
 
     // if (usb.readable()) {
