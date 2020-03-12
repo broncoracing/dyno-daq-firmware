@@ -28,7 +28,7 @@ volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
 volatile float servoVal = 95;
-float RPMSet = 6000;
+float RPMSet = 10000;
 
 CANMessage inMsg;
 CANMessage outMsg;
@@ -74,8 +74,9 @@ int main() {
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
     controller.setProcessValue((float)rpm);
 
-    if (rpm > (RPMSet - 6000)) {
+    if (rpm > (RPMSet - 3000)) {
       servoVal = 140 - controller.compute();
+      //servoVal = 90 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 140)
     } else {
       servoVal = 0;
     }
