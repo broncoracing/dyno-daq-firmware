@@ -76,11 +76,11 @@ int main() {
 
     if (rpm > (RPMSet - 1500)) {
       //servoVal = 140 - controller.compute();
-      servoVal = 90 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 140)
+      servoVal = 95 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 90)
     } else {
       servoVal = 0;
     }
-
+servoVal = 0;
     servo.write(servoVal);
 
     // Send CAN alive frame
@@ -90,12 +90,12 @@ int main() {
     }
 
     // Send Data for MATLAB
-    usb.printf("r%d", rpm);
-    usb.printf("l%ld\n", scaleInt);
+    //usb.printf("r%d", rpm);
+    //usb.printf("l%ld\n", scaleInt);
 
     // For terminal viewing
-    //usb.printf("%f\t", servoVal);
-    //usb.printf("%d\n", rpm);
+    usb.printf("%f\t", servoVal);
+    usb.printf("%d\n", rpm);
     // usb.printf("%d\n", waterTemp);
 
     // if (usb.readable()) {
