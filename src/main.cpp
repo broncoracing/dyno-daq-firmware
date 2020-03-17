@@ -95,7 +95,8 @@ servoVal = 0;
 
     // For terminal viewing
     usb.printf("%f\t", servoVal);
-    usb.printf("%d\n", rpm);
+    usb.printf("%d\t", rpm);
+    usb.printf("%d\n", scaleInt);
     // usb.printf("%d\n", waterTemp);
 
     // if (usb.readable()) {
