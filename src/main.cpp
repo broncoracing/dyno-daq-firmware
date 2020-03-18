@@ -34,7 +34,7 @@ CANMessage inMsg;
 CANMessage outMsg;
 
 Timer canTimer;
-Servo servo(A1);
+Servo servo(A2);
 
 void CANCallback();
 
@@ -80,7 +80,7 @@ int main() {
     } else {
       servoVal = 0;
     }
-servoVal = 0;
+servoVal = 1;
     servo.write(servoVal);
 
     // Send CAN alive frame
@@ -96,7 +96,7 @@ servoVal = 0;
     // For terminal viewing
     usb.printf("%f\t", servoVal);
     usb.printf("%d\t", rpm);
-    usb.printf("%d\n", scaleInt);
+    usb.printf("%ld\n", scaleInt);
     // usb.printf("%d\n", waterTemp);
 
     // if (usb.readable()) {
