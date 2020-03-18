@@ -11,7 +11,7 @@ Info:
   - Send 0-180 degrees over serial as uint8 to control servo.
 
 Pins:
-  - Servo: A1
+  - Servo: A2
   - Solenoid: D1
   - HX711 (SCK, DT): D11, D9
   - CAN transciever (RD, TD): D10, D2
