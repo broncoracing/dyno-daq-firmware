@@ -4,6 +4,8 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 */
 
+// servo calibration: 70 = 0 degrees, 160 = 90 degrees
+
 
 #include <Hx711.h>
 #include <PID.h>
@@ -27,7 +29,9 @@ volatile int16_t waterTemp = 0;
 volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
-volatile float servoVal = 95;
+float servoMin = 70; // calibrated servo max / min values
+float servoMax = 160;
+volatile float servoVal = servoMin;
 float RPMSet = 4500;
 
 CANMessage inMsg;
@@ -41,7 +45,7 @@ void CANCallback();
 int main() {
 
   controller.setInputLimits(0.0, 14000);
-  controller.setOutputLimits(0, 140);
+  controller.setOutputLimits(servoMax, servoMin);
   controller.setMode(0);
   controller.setSetPoint(RPMSet);
 
@@ -75,12 +79,12 @@ int main() {
     controller.setProcessValue((float)rpm);
 
     if (rpm > (RPMSet - 1500)) {
-      //servoVal = 140 - controller.compute();
-      servoVal = 95 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 90)
+      servoVal = servoMax - controller.compute();
+      // servoVal = 40 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 90)
     } else {
-      servoVal = 0;
+      servoVal = servoMin;
     }
-servoVal = 1;
+
     servo.write(servoVal);
 
     // Send CAN alive frame
@@ -94,7 +98,7 @@ servoVal = 1;
     //usb.printf("l%ld\n", scaleInt);
 
     // For terminal viewing
-    usb.printf("%f\t", servoVal);
+    usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
     usb.printf("%d\t", rpm);
     usb.printf("%ld\n", scaleInt);
     // usb.printf("%d\n", waterTemp);
@@ -121,7 +125,7 @@ void CANCallback() {
       if (newTemp > 32767) {
         newTemp = newTemp - 65536;
       }
-      waterTemp = (uint16_t)((newTemp / 10) * 1.8) + 32;
+      // waterTemp = (uint16_t)((newTemp / 10) * 1.8) + 32;
     }
   }
 }
