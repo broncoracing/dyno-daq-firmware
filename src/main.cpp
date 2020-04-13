@@ -31,8 +31,10 @@ volatile uint32_t scaleInt = 0;
 
 float servoMin = 70; // calibrated servo max / min values
 float servoMax = 160;
-volatile float servoVal = servoMin;
+volatile int servoVal = servoMin;
 float RPMSet = 4500;
+
+volatile unsigned long tock = 1;
 
 CANMessage inMsg;
 CANMessage outMsg;
@@ -93,22 +95,21 @@ int main() {
       canTimer.reset();
     }
 
-    // Send Data for MATLAB
-    //usb.printf("r%d", rpm);
-    //usb.printf("l%ld\n", scaleInt);
+    // Send Data for plotting
+    // usb.printf("%d,", rpm);
+    usb.printf("%lu,", tock);
+    usb.printf("%ld\n", scaleInt);
+    tock++;
 
     // For terminal viewing
-    usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
-    usb.printf("%d\t", rpm);
-    usb.printf("%ld\n", scaleInt);
+    // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
+    // usb.printf("%d\t", rpm);
+    // usb.printf("%ld\n", scaleInt);
     // usb.printf("%d\n", waterTemp);
 
-    // if (usb.readable()) {
-    // solenoidPin.write(usb.getc());
-    // servo.write((uint8_t)usb.getc());
-    // }
   }
 }
+
 
 // Fires on incoming CAN frame interrupt
 void CANCallback() {
