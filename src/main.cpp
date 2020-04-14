@@ -96,8 +96,8 @@ int main() {
     }
 
     // Send Data for plotting
-    // usb.printf("%d,", rpm);
     usb.printf("%lu,", tock);
+    usb.printf("%d,", rpm);
     usb.printf("%ld\n", scaleInt);
     tock++;
 
