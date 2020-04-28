@@ -33,6 +33,11 @@ float servoMax = 160;
 volatile int servoVal = servoMin;
 float RPMSet = 4500;
 
+volatile float torque = 0;
+volatile float hp = 0;
+volatile double zeroVal = 0;
+double calMult = 0.0001;
+
 
 CANMessage inMsg;
 CANMessage outMsg;
@@ -104,10 +109,15 @@ int main()
       canTimer.reset();
     }
 
+    //calibrate output
+    torque = calMult * (scaleInt - zeroVal);
+    hp = torque * rpm / 5252;
+
     // Send Data for plotting
     usb.printf("%f,", dataTimer.read());
-    usb.printf("%d,", rpm);
-    usb.printf("%ld\n", scaleInt);
+    usb.printf("%d,", (rpm / 100));
+    usb.printf("%f,", torque);
+    usb.printf("%f\n", hp);
 
     // For terminal viewing
     // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
