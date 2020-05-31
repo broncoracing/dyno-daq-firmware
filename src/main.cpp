@@ -13,7 +13,7 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 CAN can0(PA_11, PA_12, 250000);
 
-PID controller(10, 0, 10, 80);
+PID controller(10, 10, 10, 80);
 
 Hx711 scale1 = Hx711(D11, D9);
 
@@ -36,7 +36,7 @@ float RPMSet = 4500;
 volatile float torque = 0;
 volatile float hp = 0;
 volatile double zeroVal = 0;
-double calMult = 0.0001;
+double calMult = 1;
 
 
 CANMessage inMsg;
@@ -56,7 +56,7 @@ int main()
 
   controller.setInputLimits(0.0, 14000);
   controller.setOutputLimits(servoMax, servoMin);
-  controller.setMode(0);
+  controller.setMode(1);
   controller.setSetPoint(RPMSet);
 
   canTimer.start();
@@ -110,7 +110,9 @@ int main()
     }
 
     //calibrate output
-    torque = calMult * (scaleInt - zeroVal);
+    zeroVal = (41.142 * rpm) + 63664;
+    zeroVal = 0;
+    torque = 0.05876 * (scaleInt / 1000) + 0.7273;
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
@@ -119,11 +121,10 @@ int main()
     usb.printf("%f,", torque);
     usb.printf("%f\n", hp);
 
-    // For terminal viewing
+    // // For terminal viewing
     // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
     // usb.printf("%d\t", rpm);
     // usb.printf("%ld\n", scaleInt);
-    // usb.printf("%d\n", waterTemp);
   }
 }
 
