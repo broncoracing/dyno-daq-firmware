@@ -13,7 +13,7 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 CAN can0(PA_11, PA_12, 250000);
 
-PID controller(10, 10, 10, 80);
+PID controller(1 , 0, 0, 80);
 
 Hx711 scale1 = Hx711(D11, D9);
 
@@ -31,7 +31,7 @@ volatile uint32_t scaleInt = 0;
 float servoMin = 70; // calibrated servo max / min values
 float servoMax = 160;
 volatile int servoVal = servoMin;
-float RPMSet = 4500;
+float RPMSet = 6000;
 
 volatile float torque = 0;
 volatile float hp = 0;
@@ -45,7 +45,7 @@ CANMessage outMsg;
 Timer dataTimer;
 Timer canTimer;
 
-Servo servo(A2);
+Servo servo(A1);
 
 void CANCallback();
 
@@ -93,7 +93,6 @@ int main()
     if (rpm > (RPMSet - 1500))
     {
       servoVal = servoMax - controller.compute();
-      // servoVal = 40 ; //change the niumber here to change open angle (0 --> 140 = 0 --> 90)
     }
     else
     {
@@ -116,15 +115,15 @@ int main()
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
-    usb.printf("%f,", dataTimer.read());
-    usb.printf("%d,", (rpm / 100));
-    usb.printf("%f,", torque);
-    usb.printf("%f\n", hp);
+    // usb.printf("%f,", dataTimer.read());
+    // usb.printf("%d,", (rpm / 100));
+    // usb.printf("%f,", torque);
+    // usb.printf("%f\n", hp);
 
     // // For terminal viewing
-    // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
-    // usb.printf("%d\t", rpm);
-    // usb.printf("%ld\n", scaleInt);
+    usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
+    usb.printf("%d\t", rpm);
+    usb.printf("%ld\n", scaleInt);
   }
 }
 
