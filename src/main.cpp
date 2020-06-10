@@ -35,8 +35,7 @@ float RPMSet = 6000;
 
 volatile float torque = 0;
 volatile float hp = 0;
-volatile double zeroVal = 0;
-double calMult = 1;
+float gearCal = 1.093;
 
 
 CANMessage inMsg;
@@ -111,7 +110,7 @@ int main()
     //calibrate output
     zeroVal = (41.142 * rpm) + 63664;
     zeroVal = 0;
-    torque = 4.1446 * (scaleInt / 100000) + 3.0048;
+    torque = (4.1446 * (scaleInt / 100000) + 3.0048)/gearCal;
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
