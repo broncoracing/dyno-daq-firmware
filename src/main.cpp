@@ -13,7 +13,7 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 CAN can0(PA_11, PA_12, 250000);
 
-PID controller(2 , 0, 0, 80);
+PID controller(8 , 0, 0, 80);
 
 Hx711 scale1 = Hx711(D11, D9);
 
@@ -28,8 +28,8 @@ volatile int16_t waterTemp = 0;
 volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
-float servoMin = 0; // calibrated servo max / min values
-float servoMax = 140;
+double servoMin = 0; // calibrated servo max / min values
+double servoMax = 140;
 volatile int servoVal = servoMin;
 float RPMSet = 6000;
 
@@ -54,7 +54,7 @@ int main()
   dataTimer.start();
 
   controller.setInputLimits(0.0, 14000);
-  controller.setOutputLimits(servoMax, servoMin);
+  controller.setOutputLimits(servoMin, servoMax);
   controller.setMode(1);
   controller.setSetPoint(RPMSet);
 
@@ -89,7 +89,7 @@ int main()
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
     controller.setProcessValue((float)rpm);
 
-    if (rpm > (RPMSet - 1500))
+    if (rpm > 1)
     {
       servoVal = servoMax - controller.compute();
     }
@@ -108,21 +108,21 @@ int main()
     }
 
     //calibrate output
-    zeroVal = (41.142 * rpm) + 63664;
-    zeroVal = 0;
+    // zeroVal = (41.142 * rpm) + 63664;
+    // zeroVal = 0;
     torque = (4.1446 * (scaleInt / 100000) + 3.0048)/gearCal;
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
-    usb.printf("%f,", dataTimer.read());
-    usb.printf("%d,", (rpm / 100));
-    usb.printf("%f,", torque);
-    usb.printf("%f\n", hp);
+    // usb.printf("%f,", dataTimer.read());
+    // usb.printf("%d,", (rpm / 100));
+    // usb.printf("%f,", torque);
+    // usb.printf("%f\n", hp);
 
     // // For terminal viewing
-    // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
-    // usb.printf("%d\t", rpm);
-    // usb.printf("%ld\n", scaleInt);
+    usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
+    usb.printf("%d\t", rpm);
+    usb.printf("%ld\n", scaleInt);
   }
 }
 
