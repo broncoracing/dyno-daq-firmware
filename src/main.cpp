@@ -110,19 +110,19 @@ int main()
     //calibrate output
     // zeroVal = (41.142 * rpm) + 63664;
     // zeroVal = 0;
-    torque = (4.1446 * (scaleInt / 100000) + 3.0048)/gearCal;
+    torque = (2.1393 * (scaleInt / 10000) + 5.1861)/gearCal;
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
-    // usb.printf("%f,", dataTimer.read());
-    // usb.printf("%d,", (rpm / 100));
-    // usb.printf("%f,", torque);
-    // usb.printf("%f\n", hp);
+    usb.printf("%f,", dataTimer.read());
+    usb.printf("%d,", (rpm / 100));
+    usb.printf("%f,", torque);
+    usb.printf("%f\n", hp);
 
     // // For terminal viewing
-    usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
-    usb.printf("%d\t", rpm);
-    usb.printf("%ld\n", scaleInt);
+    // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
+    // usb.printf("%d\t", rpm);
+    // usb.printf("%ld\n", scaleInt);
   }
 }
 
