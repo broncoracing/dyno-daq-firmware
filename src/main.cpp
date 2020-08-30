@@ -4,8 +4,6 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 */
 
-// servo calibration: 70 = 0 degrees, 160 = 90 degrees
-
 #include <Hx711.h>
 #include <PID.h>
 #include <mbed.h>
@@ -13,7 +11,7 @@ Bronco Racing 2020 Dyno zDAQ - See README for details
 
 CAN can0(PA_11, PA_12, 250000);
 
-PID controller(8 , 0, 0, 80);
+PID controller(2.75 , 100000, 0, 80);
 
 Hx711 scale1 = Hx711(D11, D9);
 
@@ -28,10 +26,20 @@ volatile int16_t waterTemp = 0;
 volatile double scaleValue = 0;
 volatile uint32_t scaleInt = 0;
 
-double servoMin = 0; // calibrated servo max / min values
-double servoMax = 140;
+double servoMin = 5; // calibrated servo max / min values
+double servoMax = 135;
 volatile int servoVal = servoMin;
 float RPMSet = 6000;
+float RPMBuff = 1000;
+volatile float RPMLast = 0;
+volatile double RPMInt = 0;
+volatile float servoValP = 0;
+volatile float servoValI = 0;
+volatile float servoValD = 0;
+
+volatile double Kp = 0.03;
+float Kd = 0.1;
+float Ki = 0.001;
 
 volatile float torque = 0;
 volatile float hp = 0;
@@ -89,16 +97,59 @@ int main()
     scaleInt = (uint32_t)((abs(scale1.readTaredA())) * 1000);
     controller.setProcessValue((float)rpm);
 
-    if (rpm > 1)
+    // if (rpm > 1)
+    // {
+    //   servoVal = servoMax - controller.compute();
+    // }
+    // else
+    // {
+    //   servoVal = servoMin;
+    // }
+
+    if ((rpm + RPMBuff) > RPMSet)
     {
-      servoVal = servoMax - controller.compute();
+      servoValP  = Kp * ((rpm + RPMBuff) - RPMSet);
     }
     else
     {
-      servoVal = servoMin;
+      servoValP = servoMin;
+    }
+    
+    if (rpm > (RPMSet - RPMBuff))
+    {
+      RPMInt = RPMInt + (rpm - RPMSet);
+    }
+    else
+    {
+      RPMInt = 0;
+    }
+    
+    servoValI = Ki * RPMInt;
+    
+    servoValD = Kd * (RPMLast - rpm);
+
+    servoVal = servoValP + servoValI + servoValD;
+
+    if (servoVal > servoMax)
+    {
+      servoVal = servoMax;
     }
 
-    servo.write(servoVal);
+    if (servoVal < servoMin)
+    {
+      servoVal = servoMin;
+    }
+    
+    servo.write(servoVal); 
+    RPMLast = rpm;
+
+    // // for servo calibration
+    // servoVal = servoVal + 1;
+    // if (servoVal > 135)
+    // {
+    //   servoVal = 5;
+    // }
+    
 
     // Send CAN alive frame
     if (canTimer.read_ms() > 50)
@@ -114,15 +165,15 @@ int main()
     hp = torque * rpm / 5252;
 
     // Send Data for plotting
-    usb.printf("%f,", dataTimer.read());
-    usb.printf("%d,", (rpm / 100));
-    usb.printf("%f,", torque);
-    usb.printf("%f\n", hp);
+    // usb.printf("%f,", dataTimer.read());
+    // usb.printf("%d,", (rpm / 100));
+    // usb.printf("%f,", torque);
+    // usb.printf("%f\n", hp);
 
     // // For terminal viewing
-    // usb.printf("%f\t", (servoVal - servoMin)); // corrected valve position
-    // usb.printf("%d\t", rpm);
-    // usb.printf("%ld\n", scaleInt);
+    usb.printf("%d\t", (servoVal)); // corrected valve position
+    usb.printf("%d\t", rpm);
+    usb.printf("%ld\n", scaleInt);
   }
 }
 
