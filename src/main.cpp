@@ -29,7 +29,7 @@ volatile uint32_t scaleInt = 0;
 double servoMin = 5; // calibrated servo max / min values
 double servoMax = 135;
 volatile int servoVal = servoMin;
-float RPMSet = 6000;
+float RPMSet = 7000;
 float RPMBuff = 1000;
 volatile float RPMLast = 0;
 volatile double RPMInt = 0;
@@ -38,8 +38,8 @@ volatile float servoValI = 0;
 volatile float servoValD = 0;
 
 volatile double Kp = 0.03;
-float Kd = 0.1;
-float Ki = 0.001;
+float Ki = 0.0006; //0.001
+float Kd = 1; // 0.2
 
 volatile float torque = 0;
 volatile float hp = 0;
@@ -126,7 +126,7 @@ int main()
     
     servoValI = Ki * RPMInt;
     
-    servoValD = Kd * (RPMLast - rpm);
+    servoValD = Kd * (rpm - RPMLast);
 
     servoVal = servoValP + servoValI + servoValD;
 
@@ -158,19 +158,23 @@ int main()
       canTimer.reset();
     }
 
+
     //calibrate output
     // zeroVal = (41.142 * rpm) + 63664;
     // zeroVal = 0;
     torque = (2.1393 * (scaleInt / 10000) + 5.1861)/gearCal;
     hp = torque * rpm / 5252;
 
-    // Send Data for plotting
+    // // Send Data for plotting
     // usb.printf("%f,", dataTimer.read());
     // usb.printf("%d,", (rpm / 100));
     // usb.printf("%f,", torque);
     // usb.printf("%f\n", hp);
 
-    // // For terminal viewing
+    // For terminal viewing
+    usb.printf("%f\t", servoValP);
+    usb.printf("%f\t", servoValI);
+    usb.printf("%f\t", servoValD);
     usb.printf("%d\t", (servoVal)); // corrected valve position
     usb.printf("%d\t", rpm);
     usb.printf("%ld\n", scaleInt);
